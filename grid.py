@@ -81,7 +81,10 @@ class Grid():
 
   def export(self):
     with open(utils.export_path, "w+", encoding="utf-8") as f:
-      output = f"{self._rows} {self._cols}\n"
-      for row in self._grid:
-        output = output + " ".join([v.state.value for v in row]) + "\n"
-      f.write(output)
+      f.write(str(self))
+
+  def __str__(self) -> str:
+    output = f"{self._rows} {self._cols}\n"
+    for row in self._grid:
+      output = output + " ".join([v.state.value for v in row]) + "\n"
+    return output

@@ -1,14 +1,18 @@
 import pygame
 from grid import Grid, TILE_SIZE, BORDER_SIZE, State, Tile
+from solve import bfs
+
+fn = bfs
 
 
 def main() -> int:
   pygame.init()
   pygame.display.set_caption("Maze Solver")
 
-  WIDTH, HEIGHT = 20, 10  # number of tiles
+  WIDTH, HEIGHT = 5, 5  # number of tiles
 
   DONE = False
+  SOLVING = False
   SCREEN = pygame.display.set_mode((
       WIDTH * (TILE_SIZE + BORDER_SIZE),
       HEIGHT * (TILE_SIZE + BORDER_SIZE)
@@ -19,6 +23,9 @@ def main() -> int:
   while not DONE:
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
+        DONE = True
+      elif SOLVING:
+        # run solving function here
         DONE = True
       elif event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
@@ -31,6 +38,8 @@ def main() -> int:
           GRID.set_start(row, col)
         elif event.button == 3:
           GRID.set_end(row, col)
+      elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        SOLVING = True
 
     SCREEN.fill((255, 255, 255))
     GRID.render(SCREEN)
