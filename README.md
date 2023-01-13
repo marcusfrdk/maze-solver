@@ -1,6 +1,8 @@
+<img src="./assets/bfs.gif" alt="breadth first search" height="256px" style="margin-bottom: 1rem" />
+
 # Maze Solver
 
-A program to solve 2D matrix mazes.
+A program to solve 2D mazes.
 
 ## Inspiration
 

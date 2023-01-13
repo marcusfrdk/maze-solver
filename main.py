@@ -1,53 +1,187 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
-from grid import Grid, TILE_SIZE, BORDER_SIZE, State, Tile
-from solve import bfs
+import argparse
+import time
+import utils
+import solve
 
-fn = bfs
+pygame.init()
+
+colors = {
+    "border": (224, 224, 224),
+    "background": (255, 255, 255),
+    "tile_none": (255, 255, 255),
+    "tile_blocked": (0, 0, 0),
+    "tile_start": (0, 255, 0),
+    "tile_end": (255, 0, 0),
+    "tile_visited": (255, 0, 255),
+    "tile_path": (0, 255, 255),
+}
+
+state_colors = {
+    "n": colors["tile_none"],
+    "b": colors["tile_blocked"],
+    "s": colors["tile_start"],
+    "e": colors["tile_end"],
+    "v": colors["tile_visited"],
+    "p": colors["tile_path"]
+}
+
+
+def get_args() -> dict:
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-c", "--columns", type=int, default=9)
+  parser.add_argument("-r", "--rows", type=int, default=6)
+  parser.add_argument("-i", "--import", type=str)
+  parser.add_argument("-e", "--export", type=str)
+  args = vars(parser.parse_args())
+
+  if args["import"] and not os.path.isfile(args["import"]):
+    print("Import file does not exist.")
+    exit(1)
+
+  if args["export"] and not args["export"].endswith(".txt"):
+    print("Invalid export location.")
+    exit(1)
+
+  return args
+
+
+def draw_maze(cols: int, rows: int) -> list[list[str]]:
+  tile_size = 40  # pixels
+  tile_border_size = 2  # pixels
+
+  pygame.display.set_caption("Draw Maze")
+  done = False
+  clock = pygame.time.Clock()
+  screen = pygame.display.set_mode((
+      cols * (tile_size + tile_border_size),
+      rows * (tile_size + tile_border_size),
+  ))
+
+  start = None
+  end = None
+
+  grid = []
+  for row in range(rows):
+    grid.append([])
+    for col in range(cols):
+      grid[row].append(f"n")
+
+  while not done:
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        done = True
+      elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        if not start:
+          print("Missing start")
+        elif not end:
+          print("Missing end")
+        else:
+          done = True
+      elif event.type == pygame.MOUSEBUTTONDOWN:
+        pos = pygame.mouse.get_pos()
+        col = pos[0] // (tile_size + tile_border_size)
+        row = pos[1] // (tile_size + tile_border_size)
+        tile = grid[row][col]
+
+        if event.button == 1:
+          if tile == "n":
+            grid[row][col] = "b"
+          elif tile == "b":
+            grid[row][col] = "n"
+        elif event.button == 2:
+          if isinstance(start, tuple):
+            grid[start[0]][start[1]] = "n"
+          grid[row][col] = "s"
+          start = (row, col)
+        elif event.button == 3:
+          if isinstance(end, tuple):
+            grid[end[0]][end[1]] = "n"
+          grid[row][col] = "e"
+          end = (row, col)
+
+        # print(row, col, grid[row][col])
+
+    screen.fill((255, 255, 255))
+
+    for row in range(rows):
+      for col in range(cols):
+        max_size = tile_size + tile_border_size
+        min_size = tile_size
+        border_rect = pygame.Rect(
+            col * max_size,
+            row * max_size,
+            max_size,
+            max_size
+        )
+        inner_rect = pygame.Rect(
+            col * max_size + tile_border_size,
+            row * max_size + tile_border_size,
+            min_size,
+            min_size
+        )
+        pygame.draw.rect(screen, colors["border"], border_rect)
+        pygame.draw.rect(screen, state_colors[grid[row][col]], inner_rect)
+
+    pygame.display.flip()
+    clock.tick(60)
+
+  return grid
+
+
+def load_maze(fp: str) -> tuple[int, int, list[list[str]]]:
+  with open(fp, "r", encoding="utf-8") as f:
+    grid = []
+    for line in [line.strip() for line in f.readlines()]:
+      grid.append(line.split(" "))
+    return grid
+
+
+def export_maze(fp: str, maze: list[list[str]]) -> None:
+  with open(fp, "w+", encoding="utf-8") as f:
+    output = ""
+    for row in maze:
+      output = f"{output}{' '.join(row).replace('v', 'e').replace('p', 'e')}\n"
+    f.write(output)
 
 
 def main() -> int:
-  pygame.init()
-  pygame.display.set_caption("Maze Solver")
+  args = get_args()
 
-  WIDTH, HEIGHT = 5, 5  # number of tiles
+  # Load
+  if args["import"]:
+    maze = load_maze(args["import"])
+  else:
+    maze = draw_maze(args["columns"], args["rows"])
 
-  DONE = False
-  SOLVING = False
-  SCREEN = pygame.display.set_mode((
-      WIDTH * (TILE_SIZE + BORDER_SIZE),
-      HEIGHT * (TILE_SIZE + BORDER_SIZE)
+  # Solve
+  path = solve.bfs(maze)
+  
+  # Visualize path
+  final = maze.copy()
+  clock = pygame.time.Clock()
+  screen = pygame.display.set_mode((
+      len(maze[0]) * (utils.tile_size + utils.tile_border_size),
+      len(maze) * (utils.tile_size + utils.tile_border_size),
   ))
-  CLOCK = pygame.time.Clock()
-  GRID = Grid(WIDTH, HEIGHT)
+  pygame.display.set_caption("Final Path")
+  for x, y in path:
+    if final[x][y] not in ["s", "e"]:
+      final[x][y] = "p"
+    utils.render(final, screen, clock)
+    time.sleep(0.15)
+  name = os.path.basename(args["export"]).replace(".txt", "")
+  pygame.image.save(screen, os.path.join(utils.root_path, f'{name}.png'))
 
-  while not DONE:
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        DONE = True
-      elif SOLVING:
-        # run solving function here
-        DONE = True
-      elif event.type == pygame.MOUSEBUTTONDOWN:
-        pos = pygame.mouse.get_pos()
-        col = pos[0] // (TILE_SIZE + BORDER_SIZE)
-        row = pos[1] // (TILE_SIZE + BORDER_SIZE)
-        tile: Tile = GRID._grid[row][col]
-        if event.button == 1:
-          tile.toggle_block()
-        elif event.button == 2:
-          GRID.set_start(row, col)
-        elif event.button == 3:
-          GRID.set_end(row, col)
-      elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-        SOLVING = True
 
-    SCREEN.fill((255, 255, 255))
-    GRID.render(SCREEN)
-    pygame.display.flip()
-    CLOCK.tick(60)
+  # Export
+  if args["export"]:
+    export_maze(args["export"], maze)
 
-  GRID.export()
-  return 0
+  utils.print_maze(maze)
+  print(f"\nPath: {' '.join([f'({i},{j})' for i, j in path])}")
 
 
 if __name__ == "__main__":
