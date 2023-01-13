@@ -1,4 +1,5 @@
 import pygame
+import utils
 from enum import Enum
 
 TILE_SIZE = 40  # pixels
@@ -11,6 +12,8 @@ class State(Enum):
   BLOCKED = "b"
   START = "s"
   END = "e"
+  VISITED = "v"
+  ACTIVE = "a"
 
 
 colors = {
@@ -22,14 +25,14 @@ colors = {
 
 
 class Tile():
-  def __init__(self, x: int, y: int):
-    self._x = x
-    self._y = y
+  def __init__(self, col: int, row: int):
+    self._col = col
+    self._row = row
     self.state = State.NONE
     self._border_rect = pygame.Rect(
-        self._x, self._y, TILE_SIZE + BORDER_SIZE, TILE_SIZE + BORDER_SIZE)
+        self._col, self._row, TILE_SIZE + BORDER_SIZE, TILE_SIZE + BORDER_SIZE)
     self._inner_rect = pygame.Rect(
-        self._x + BORDER_SIZE, self._y + BORDER_SIZE, TILE_SIZE, TILE_SIZE)
+        self._col + BORDER_SIZE, self._row + BORDER_SIZE, TILE_SIZE, TILE_SIZE)
 
   def render(self, screen):
     pygame.draw.rect(screen, BORDER_COLOR, self._border_rect)
@@ -47,34 +50,38 @@ class Grid():
     self._cols = cols
     self._rows = rows
     self._grid = grid
-    self._start = None  # (col, row)
-    self._end = None  # (col, row)
+    self._start = None  # (row, col)
+    self._end = None  # (row, col)
 
     if not grid:
-      for x_pos in range(self._cols):
+      for rows in range(self._rows):
         self._grid.append([])
-        for y_pos in range(self._rows):
-          self._grid[x_pos].append(Tile(
-              x_pos * (TILE_SIZE + BORDER_SIZE),
-              y_pos * (TILE_SIZE + BORDER_SIZE)
+        for cols in range(self._cols):
+          self._grid[rows].append(Tile(
+              cols * (TILE_SIZE + BORDER_SIZE),
+              rows * (TILE_SIZE + BORDER_SIZE)
           ))
 
-  def set_start(self, col: int, row: int):
+  def set_start(self, row: int, col: int):
     if isinstance(self._start, tuple):
       self._grid[self._start[0]][self._start[1]].set_state(State.NONE)
-    self._grid[col][row].set_state(State.START)
-    self._start = (col, row)
+    self._grid[row][col].set_state(State.START)
+    self._start = (row, col)
 
-  def set_end(self, col: int, row: int):
+  def set_end(self, row: int, col: int):
     if isinstance(self._end, tuple):
       self._grid[self._end[0]][self._end[1]].set_state(State.NONE)
-    self._grid[col][row].set_state(State.END)
-    self._end = (col, row)
+    self._grid[row][col].set_state(State.END)
+    self._end = (row, col)
 
   def render(self, screen):
-    for col in range(self._cols):
-      for row in range(self._rows):
-        self._grid[col][row].render(screen)
+    for row in range(self._rows):
+      for col in range(self._cols):
+        self._grid[row][col].render(screen)
 
   def export(self):
-    pass
+    with open(utils.export_path, "w+", encoding="utf-8") as f:
+      output = f"{self._rows} {self._cols}\n"
+      for row in self._grid:
+        output = output + " ".join([v.state.value for v in row]) + "\n"
+      f.write(output)

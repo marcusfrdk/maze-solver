@@ -6,7 +6,7 @@ def main() -> int:
   pygame.init()
   pygame.display.set_caption("Maze Solver")
 
-  WIDTH, HEIGHT = 10, 5  # number of tiles
+  WIDTH, HEIGHT = 20, 10  # number of tiles
 
   DONE = False
   SCREEN = pygame.display.set_mode((
@@ -24,13 +24,13 @@ def main() -> int:
         pos = pygame.mouse.get_pos()
         col = pos[0] // (TILE_SIZE + BORDER_SIZE)
         row = pos[1] // (TILE_SIZE + BORDER_SIZE)
-        tile: Tile = GRID._grid[col][row]
+        tile: Tile = GRID._grid[row][col]
         if event.button == 1:
           tile.toggle_block()
         elif event.button == 2:
-          GRID.set_start(col, row)
+          GRID.set_start(row, col)
         elif event.button == 3:
-          GRID.set_end(col, row)
+          GRID.set_end(row, col)
 
     SCREEN.fill((255, 255, 255))
     GRID.render(SCREEN)
