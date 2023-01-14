@@ -9,14 +9,14 @@ tile_border_size = 2  # pixels
 cycle_time = 0.1 # seconds between renders
 
 colors = {
-    "border": (180, 180, 180),
+    "border": (200, 200, 200),
     "background": (255, 255, 255),
     "tile_none": (255, 255, 255),
     "tile_blocked": (28, 28, 28),
-    "tile_start": (143, 240, 164),
-    "tile_end": (246, 97, 81),
-    "tile_visited": (220, 220, 220),
-    "tile_path": (153, 193, 241),
+    "tile_start": (28, 204, 66),
+    "tile_end": (220, 32, 12),
+    "tile_visited": (139, 139, 139),
+    "tile_path": (201, 75, 203),
 }
 
 state_colors = {
