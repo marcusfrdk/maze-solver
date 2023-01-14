@@ -2,6 +2,7 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import argparse
+import copy
 import time
 import utils
 import solve
@@ -31,8 +32,8 @@ state_colors = {
 
 def get_args() -> dict:
   parser = argparse.ArgumentParser()
-  parser.add_argument("-c", "--columns", type=int, default=8)
-  parser.add_argument("-r", "--rows", type=int, default=5)
+  parser.add_argument("-c", "--columns", type=int, default=9)
+  parser.add_argument("-r", "--rows", type=int, default=6)
   parser.add_argument("-i", "--import", type=str)
   parser.add_argument("-e", "--export", type=str, default="output.txt")
   args = vars(parser.parse_args())
@@ -140,6 +141,7 @@ def main() -> int:
     maze = draw_maze(args["columns"], args["rows"])
 
   # Solve
+  original = copy.deepcopy(maze)
   path = solve.bfs(maze)
   
   # Visualize path
@@ -157,7 +159,7 @@ def main() -> int:
     time.sleep(utils.cycle_time)
 
   # Export
-  utils.export_maze(args["export"], maze)
+  utils.export_maze(args["export"], original)
   name = os.path.basename(args["export"]).replace(".txt", "")
   pygame.image.save(screen, os.path.join(utils.root_path, f'{name}.png'))
 
