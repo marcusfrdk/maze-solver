@@ -42,7 +42,7 @@ def main() -> int:
   original = copy.deepcopy(maze)
   path = solve.bfs(maze)
 
-  print(path)
+  print(f"Solution found in {len(path)} steps")
   
   # Visualize path
   maze_visualize = maze.copy()
