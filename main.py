@@ -12,11 +12,11 @@ colors = {
     "border": (224, 224, 224),
     "background": (255, 255, 255),
     "tile_none": (255, 255, 255),
-    "tile_blocked": (0, 0, 0),
-    "tile_start": (0, 255, 0),
-    "tile_end": (255, 0, 0),
-    "tile_visited": (255, 0, 255),
-    "tile_path": (0, 255, 255),
+    "tile_blocked": (28, 28, 28),
+    "tile_start": (143, 240, 164),
+    "tile_end": (246, 97, 81),
+    "tile_visited": (220, 138, 221),
+    "tile_path": (249, 240, 107),
 }
 
 state_colors = {
@@ -31,10 +31,10 @@ state_colors = {
 
 def get_args() -> dict:
   parser = argparse.ArgumentParser()
-  parser.add_argument("-c", "--columns", type=int, default=9)
-  parser.add_argument("-r", "--rows", type=int, default=6)
+  parser.add_argument("-c", "--columns", type=int, default=8)
+  parser.add_argument("-r", "--rows", type=int, default=5)
   parser.add_argument("-i", "--import", type=str)
-  parser.add_argument("-e", "--export", type=str)
+  parser.add_argument("-e", "--export", type=str, default="output.txt")
   args = vars(parser.parse_args())
 
   if args["import"] and not os.path.isfile(args["import"]):
@@ -130,29 +130,12 @@ def draw_maze(cols: int, rows: int) -> list[list[str]]:
 
   return grid
 
-
-def load_maze(fp: str) -> tuple[int, int, list[list[str]]]:
-  with open(fp, "r", encoding="utf-8") as f:
-    grid = []
-    for line in [line.strip() for line in f.readlines()]:
-      grid.append(line.split(" "))
-    return grid
-
-
-def export_maze(fp: str, maze: list[list[str]]) -> None:
-  with open(fp, "w+", encoding="utf-8") as f:
-    output = ""
-    for row in maze:
-      output = f"{output}{' '.join(row).replace('v', 'e').replace('p', 'e')}\n"
-    f.write(output)
-
-
 def main() -> int:
   args = get_args()
 
   # Load
   if args["import"]:
-    maze = load_maze(args["import"])
+    maze = utils.load_maze(args["import"])
   else:
     maze = draw_maze(args["columns"], args["rows"])
 
@@ -160,7 +143,7 @@ def main() -> int:
   path = solve.bfs(maze)
   
   # Visualize path
-  final = maze.copy()
+  maze_visualize = maze.copy()
   clock = pygame.time.Clock()
   screen = pygame.display.set_mode((
       len(maze[0]) * (utils.tile_size + utils.tile_border_size),
@@ -168,20 +151,15 @@ def main() -> int:
   ))
   pygame.display.set_caption("Final Path")
   for x, y in path:
-    if final[x][y] not in ["s", "e"]:
-      final[x][y] = "p"
-    utils.render(final, screen, clock)
-    time.sleep(0.15)
-  name = os.path.basename(args["export"]).replace(".txt", "")
-  pygame.image.save(screen, os.path.join(utils.root_path, f'{name}.png'))
-
+    if maze_visualize[x][y] not in ["s", "e"]:
+      maze_visualize[x][y] = "p"
+    utils.render(maze_visualize, screen, clock)
+    time.sleep(utils.cycle_time)
 
   # Export
-  if args["export"]:
-    export_maze(args["export"], maze)
-
-  utils.print_maze(maze)
-  print(f"\nPath: {' '.join([f'({i},{j})' for i, j in path])}")
+  utils.export_maze(args["export"], maze)
+  name = os.path.basename(args["export"]).replace(".txt", "")
+  pygame.image.save(screen, os.path.join(utils.root_path, f'{name}.png'))
 
 
 if __name__ == "__main__":

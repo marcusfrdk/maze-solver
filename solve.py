@@ -3,52 +3,55 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import utils
 import time
-from collections import deque
 
-def bfs(grid):
+def bfs(maze: list[list[str]]):
   start_pos = None
   end_pos = None
-  # find start and end positions
-  for i in range(len(grid)):
-    for j in range(len(grid[i])):
-      if grid[i][j] == "s":
+
+  # find start position
+  for i in range(len(maze)):
+    for j in range(len(maze[i])):
+      if maze[i][j] == "s":
         start_pos = (i, j)
-      elif grid[i][j] == "e":
+      elif maze[i][j] == "e":
         end_pos = (i, j)
   if not start_pos or not end_pos:
-      return None
-  # Visualize init
+    return None
+
+  # visualize init
   clock = pygame.time.Clock()
-  screen = pygame.display.set_mode((
-      len(grid[0]) * (utils.tile_size + utils.tile_border_size),
-      len(grid) * (utils.tile_size + utils.tile_border_size),
-  ))
+  screen = utils.get_screen(maze)
   pygame.display.set_caption("Breadth First Search")
 
+  queue = [(start_pos, [])]
+  visited = []
 
-  # BFS algorithm
-  queue = deque([(start_pos, [])])
   while queue:
     # Pygame exit handling
     for event in pygame.event.get(): 
       if event.type == pygame.QUIT:
         print("Aborting search...")
         exit(1)
-
-    # sleep(0.1)
-    (i, j), path = queue.popleft()
     
     # visualize
-    utils.render(grid, screen, clock)
+    utils.render(maze, screen, clock)
 
     # calculate
+    (i, j), path = queue.pop(0)
+
     if (i, j) == end_pos:
       return path + [(i, j)]
+
     for x, y in ((i+1, j), (i-1, j), (i, j+1), (i, j-1)):
-      if 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] not in ["b", "v"]:
-        if grid[i][j] not in ["s", "e"]:
-          grid[i][j] = "v"
-        queue.append(((x, y), path + [(i, j)]))
-    time.sleep(0.15)
+      if maze[i][j] not in ["s", "e"]:
+        maze[i][j] = "v"
+
+      if 0 <= x < len(maze) and 0 <= y < len(maze[0]):
+        if (x, y) not in visited and maze[x][y] not in ["b", "v"]:
+          visited.append((x, y))
+          queue.append(((x, y), path + [(i, j)]))
+
+    cycle_time = utils.cycle_time / len(queue)
+    time.sleep(cycle_time)
 
   return None
