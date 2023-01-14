@@ -1,6 +1,5 @@
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
+import os
 
 root_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,13 +9,13 @@ tile_border_size = 2  # pixels
 cycle_time = 0.1 # seconds between renders
 
 colors = {
-    "border": (200, 200, 200),
+    "border": (180, 180, 180),
     "background": (255, 255, 255),
     "tile_none": (255, 255, 255),
     "tile_blocked": (28, 28, 28),
     "tile_start": (143, 240, 164),
     "tile_end": (246, 97, 81),
-    "tile_visited": (170, 170, 170),
+    "tile_visited": (220, 220, 220),
     "tile_path": (153, 193, 241),
 }
 

@@ -51,6 +51,10 @@ def bfs(maze: list[list[str]]):
           visited.append((x, y))
           queue.append(((x, y), path + [(i, j)]))
 
+    if len(queue) == 0:
+      print("No path found")
+      exit(1)
+
     cycle_time = utils.cycle_time / len(queue)
     time.sleep(cycle_time)
 
