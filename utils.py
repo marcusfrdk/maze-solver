@@ -32,12 +32,21 @@ def print_maze(maze: list[list[str]]) -> None:
   for row in maze:
     print(" ".join(row))
 
-def load_maze(fp: str) -> tuple[int, int, list[list[str]]]:
+def load_maze(fp: str) -> tuple[tuple[int, int, list[list[str]]], pygame.Surface]:
   with open(fp, "r", encoding="utf-8") as f:
+    lines = [line.strip() for line in f.readlines()]
+    rows, cols = len(lines), len(lines[0].split(" "))
+
+    screen = pygame.display.set_mode((
+        cols * (tile_size + tile_border_size),
+        rows * (tile_size + tile_border_size),
+    ))
+
     grid = []
-    for line in [line.strip() for line in f.readlines()]:
+    for line in lines:
       grid.append(line.split(" "))
-    return grid
+
+    return grid, screen
 
 def export_maze(fp: str, maze: list[list[str]]) -> None:
   with open(fp, "w+", encoding="utf-8") as f:
@@ -46,13 +55,22 @@ def export_maze(fp: str, maze: list[list[str]]) -> None:
       output = f"{output}{' '.join(row)}\n"
     f.write(output)
 
-def get_screen(maze: list[list[str]]) -> pygame.Surface:
-  return pygame.display.set_mode((
+def get_visualization(maze: list[list[str]], title: str) -> tuple[pygame.Surface, pygame.time.Clock]:
+  screen = pygame.display.set_mode((
       len(maze[0]) * (tile_size + tile_border_size),
       len(maze) * (tile_size + tile_border_size),
   ))
+  clock = pygame.time.Clock()
+  pygame.display.set_caption(title)
+  return screen, clock
 
-def render(grid: list[list[str]], screen: pygame.Surface, clock: pygame.time.Clock) -> None:
+def get_size():
+  pass
+
+def render(grid: list[list[str]], screen: pygame.Surface, title: str) -> None:
+  clock = pygame.time.Clock()
+  pygame.display.set_caption(title)
+
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       print("Aborting path visualization...")

@@ -10,12 +10,17 @@ import utils
 
 pygame.init()
 
+algorithms = {
+  "bfs": ("Breadth First Search", solve.bfs)
+}
+
 def get_args() -> dict:
   parser = argparse.ArgumentParser()
   parser.add_argument("-c", "--columns", type=int, default=9)
   parser.add_argument("-r", "--rows", type=int, default=6)
   parser.add_argument("-i", "--import", type=str)
   parser.add_argument("-e", "--export", type=str, default="output.txt")
+  parser.add_argument("-a", "--algorithm", type=str, default="bfs", choices=algorithms.keys())
   args = vars(parser.parse_args())
 
   if args["import"] and not os.path.isfile(args["import"]):
@@ -34,28 +39,27 @@ def main() -> int:
 
   # Load
   if args["import"]:
-    maze = utils.load_maze(args["import"])
+    maze, screen = utils.load_maze(args["import"])
   else:
-    maze = draw.draw_maze(args["columns"], args["rows"])
+    screen = pygame.display.set_mode((
+        args["columns"] * (utils.tile_size + utils.tile_border_size),
+        args["rows"] * (utils.tile_size + utils.tile_border_size),
+    ))
+    maze = draw.draw_maze(args["columns"], args["rows"], screen)
 
   # Solve
   original = copy.deepcopy(maze)
-  path = solve.bfs(maze)
+  algorithm = algorithms[args["algorithm"]]
+  path = algorithm[1](maze, on_update=lambda M: utils.render(M, screen, algorithm[0]))
 
   print(f"Solution found in {len(path)} steps")
   
   # Visualize path
   maze_visualize = maze.copy()
-  clock = pygame.time.Clock()
-  screen = pygame.display.set_mode((
-      len(maze[0]) * (utils.tile_size + utils.tile_border_size),
-      len(maze) * (utils.tile_size + utils.tile_border_size),
-  ))
-  pygame.display.set_caption("Final Path")
   for x, y in path:
     if maze_visualize[x][y] not in ["s", "e"]:
       maze_visualize[x][y] = "p"
-    utils.render(maze_visualize, screen, clock)
+    utils.render(maze_visualize, screen, "Final Path")
     time.sleep(utils.cycle_time)
 
   # Export

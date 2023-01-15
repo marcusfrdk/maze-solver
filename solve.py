@@ -3,8 +3,9 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import utils
 import time
+from typing import Callable
 
-def bfs(maze: list[list[str]]):
+def bfs(maze: list[list[str]], on_update: Callable = None):
   start_pos = None
   end_pos = None
 
@@ -19,9 +20,7 @@ def bfs(maze: list[list[str]]):
     return None
 
   # visualize init
-  clock = pygame.time.Clock()
-  screen = utils.get_screen(maze)
-  pygame.display.set_caption("Breadth First Search")
+  # screen, clock = utils.get_visualization(maze, "Breadth First Search")
 
   queue = [(start_pos, [])]
   visited = []
@@ -34,7 +33,8 @@ def bfs(maze: list[list[str]]):
         exit(1)
     
     # visualize
-    utils.render(maze, screen, clock)
+    if on_update:
+      on_update(maze)
 
     # calculate
     (i, j), path = queue.pop(0)

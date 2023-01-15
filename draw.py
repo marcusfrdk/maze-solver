@@ -1,17 +1,13 @@
 import pygame
 import utils
 
-def draw_maze(cols: int, rows: int) -> list[list[str]]:
+def draw_maze(cols: int, rows: int, screen: pygame.Surface) -> list[list[str]]:
   tile_size = 40  # pixels
   tile_border_size = 2  # pixels
 
+  clock = pygame.time.Clock()
   pygame.display.set_caption("Draw Maze")
   done = False
-  clock = pygame.time.Clock()
-  screen = pygame.display.set_mode((
-      cols * (tile_size + tile_border_size),
-      rows * (tile_size + tile_border_size),
-  ))
 
   start = None
   end = None
