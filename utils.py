@@ -5,6 +5,7 @@ root_path = os.path.abspath(os.path.dirname(__file__))
 
 tile_size = 40  # pixels
 tile_border_size = 2  # pixels
+tile_full_size = tile_size + tile_border_size
 
 cycle_time = 0.1 # seconds between renders
 
@@ -37,10 +38,7 @@ def load_maze(fp: str) -> tuple[tuple[int, int, list[list[str]]], pygame.Surface
     lines = [line.strip() for line in f.readlines()]
     rows, cols = len(lines), len(lines[0].split(" "))
 
-    screen = pygame.display.set_mode((
-        cols * (tile_size + tile_border_size),
-        rows * (tile_size + tile_border_size),
-    ))
+    screen = pygame.display.set_mode((cols * tile_full_size, rows * tile_full_size))
 
     grid = []
     for line in lines:
@@ -54,18 +52,6 @@ def export_maze(fp: str, maze: list[list[str]]) -> None:
     for row in maze:
       output = f"{output}{' '.join(row)}\n"
     f.write(output)
-
-def get_visualization(maze: list[list[str]], title: str) -> tuple[pygame.Surface, pygame.time.Clock]:
-  screen = pygame.display.set_mode((
-      len(maze[0]) * (tile_size + tile_border_size),
-      len(maze) * (tile_size + tile_border_size),
-  ))
-  clock = pygame.time.Clock()
-  pygame.display.set_caption(title)
-  return screen, clock
-
-def get_size():
-  pass
 
 def render(grid: list[list[str]], screen: pygame.Surface, title: str) -> None:
   clock = pygame.time.Clock()

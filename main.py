@@ -20,7 +20,7 @@ def get_args() -> dict:
   parser.add_argument("-r", "--rows", type=int, default=6)
   parser.add_argument("-i", "--import", type=str)
   parser.add_argument("-e", "--export", type=str, default="output.txt")
-  parser.add_argument("-a", "--algorithm", type=str, default="bfs", choices=algorithms.keys())
+  parser.add_argument("-a", "--algorithm", type=str, default=list(algorithms.keys())[0], choices=algorithms.keys())
   args = vars(parser.parse_args())
 
   if args["import"] and not os.path.isfile(args["import"]):
@@ -34,17 +34,14 @@ def get_args() -> dict:
   return args
 
 
-def main() -> int:
+if __name__ == "__main__":
   args = get_args()
 
   # Load
   if args["import"]:
     maze, screen = utils.load_maze(args["import"])
   else:
-    screen = pygame.display.set_mode((
-        args["columns"] * (utils.tile_size + utils.tile_border_size),
-        args["rows"] * (utils.tile_size + utils.tile_border_size),
-    ))
+    screen = pygame.display.set_mode((args["columns"] * utils.tile_full_size, args["rows"] * utils.tile_full_size))
     maze = draw.draw_maze(args["columns"], args["rows"], screen)
 
   # Solve
@@ -66,7 +63,3 @@ def main() -> int:
   utils.export_maze(args["export"], original)
   name = os.path.basename(args["export"]).replace(".txt", "")
   pygame.image.save(screen, os.path.join(utils.root_path, f'{name}.png'))
-
-
-if __name__ == "__main__":
-  exit(main())
