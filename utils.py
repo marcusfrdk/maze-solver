@@ -29,6 +29,18 @@ state_colors = {
     "p": colors["tile_path"]
 }
 
+def get_pos(maze: list[list[str]]) -> tuple:
+  for r in range(len(maze)):
+    for c in range(len(maze[r])):
+      if maze[r][c] == "s":
+        start_pos = (r, c)
+      elif maze[r][c] == "e":
+        end_pos = (r, c)
+  if not start_pos or not end_pos:
+    print("Failed to find start- or end position")
+    exit(1)
+  return start_pos, end_pos
+
 def print_maze(maze: list[list[str]]) -> None:
   for row in maze:
     print(" ".join(row))

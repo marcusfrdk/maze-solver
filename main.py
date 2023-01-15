@@ -11,7 +11,8 @@ import utils
 pygame.init()
 
 algorithms = {
-  "bfs": ("Breadth First Search", solve.bfs)
+  "bfs": ("Breadth First Search", solve.bfs),
+  "dfs": ("Depth First Search", solve.dfs),
 }
 
 def get_args() -> dict:
@@ -49,7 +50,8 @@ if __name__ == "__main__":
   algorithm = algorithms[args["algorithm"]]
   path = algorithm[1](maze, on_update=lambda M: utils.render(M, screen, algorithm[0]))
 
-  print(f"Solution found in {len(path)} steps")
+  steps = len(path) - 1
+  print(f"Solution found in {steps} step{'' if steps == 1 else 's'}")
   
   # Visualize path
   maze_visualize = maze.copy()
